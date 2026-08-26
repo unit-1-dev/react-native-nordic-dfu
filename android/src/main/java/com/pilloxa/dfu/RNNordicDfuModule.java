@@ -61,7 +61,12 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
             starter.setZip(filePath);
         }
       
-        final DfuServiceController controller = starter.start(this.reactContext, DfuService.class);
+        try {
+            starter.start(this.reactContext, DfuService.class);
+        } catch (final IllegalStateException e) { // startForegroundService() refused while the app is in background
+            mPromise = null;
+            promise.reject("FGS_NOT_ALLOWED", "Cannot start firmware update while the app is in background", e);
+        }
     }
 
     @Override
