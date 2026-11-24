@@ -23,11 +23,14 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
 
     public RNNordicDfuModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        reactContext.addLifecycleEventListener(this);
         this.reactContext = reactContext;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             DfuServiceInitiator.createDfuNotificationChannel(reactContext);
         }
+        // Must stay the LAST statement. When the host is already RESUMED, ReactContext.addLifecycleEventListener()
+        // posts onHostResume() to the UI thread right away; this constructor runs on another thread, so registering
+        // before the field assignment let onHostResume() read a null reactContext (NPE in LocalBroadcastManager).
+        reactContext.addLifecycleEventListener(this);
     }
 
     @ReactMethod
